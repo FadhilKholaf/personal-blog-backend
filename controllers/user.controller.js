@@ -57,18 +57,32 @@ exports.deleteUser = async (req, res) => {
 
 // update a User
 exports.updateUser = async (req, res) => {
+  // id check
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ error: "No such user" });
   }
-  const user = await User.findOneAndUpdate(
-    { _id: id },
-    {
-      ...req.body,
-    }
-  );
-  if (!user) {
+
+  // password check
+  const existingUser = await User.findById(id);
+  const isPasswordChanged = req.body.password !== existingUser.password;
+
+  // updating user
+  const salt = await bcrypt.genSalt(12);
+  const hash = await bcrypt.hash(req.body.password, salt);
+  const updatedData = isPasswordChanged
+    ? {
+        ...req.body,
+        password: hash,
+      }
+    : { ...req.body };
+  const updatedUser = await User.findOneAndUpdate({ _id: id }, updatedData, {
+    new: true,
+  });
+
+  // response
+  if (!updatedUser) {
     return res.status(400).json({ error: "No such user" });
   }
-  res.status(200).json(user);
+  res.status(200).json(updatedUser);
 };

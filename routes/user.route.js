@@ -6,7 +6,7 @@ const app = express();
 app.get("/", UserController.getUsers);
 app.get("/login", UserController.logIn);
 app.post("/signup", UserController.signUp);
-app.put("/:id", UserController.updateUser);
-app.delete("/:id", UserController.deleteUser);
+app.put("/update/:id", UserController.updateUser);
+app.delete("/delete/:id", UserController.deleteUser);
 
 module.exports = app;
